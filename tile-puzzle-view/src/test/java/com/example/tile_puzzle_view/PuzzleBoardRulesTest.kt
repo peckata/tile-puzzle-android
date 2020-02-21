@@ -1,4 +1,4 @@
-package com.example.tile_puzzle.ui.puzzle
+package com.example.tile_puzzle_view
 
 import org.junit.Test
 

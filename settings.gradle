@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':tile-puzzle-view'
 rootProject.name='tile-puzzle'

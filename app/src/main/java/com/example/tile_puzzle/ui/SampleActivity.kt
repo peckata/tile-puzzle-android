@@ -5,12 +5,13 @@ import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.example.tile_puzzle.R
-import com.google.android.material.snackbar.Snackbar
 import com.example.tile_puzzle.framework.DaggerAppCompatActivity
 import com.example.tile_puzzle.framework.observeEvent
-import com.example.tile_puzzle.ui.SampleViewModel
+import com.example.tile_puzzle_view.PuzzleView.PuzzleSequenceChangeListener
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.sample_activity.*
 import javax.inject.Inject
+
 
 class SampleActivity : DaggerAppCompatActivity(R.layout.sample_activity) {
 
@@ -22,6 +23,14 @@ class SampleActivity : DaggerAppCompatActivity(R.layout.sample_activity) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Dependency injection and content view creation are complete at this point
+
+        puzzle_view.adapter = viewModel.adapter
+        // TODO convert to SAM lambda call?
+        puzzle_view.sequenceChangeListener = object: PuzzleSequenceChangeListener {
+            override fun onPuzzleSequenceChange(pieceSequence: List<Int>) {
+                viewModel.onPuzzleSequenceChange(pieceSequence)
+            }
+        }
 
         refresh_fab.setOnClickListener {
             viewModel.onRefresh()

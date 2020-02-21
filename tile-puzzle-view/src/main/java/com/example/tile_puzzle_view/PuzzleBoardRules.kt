@@ -1,8 +1,8 @@
-package com.example.tile_puzzle.ui.puzzle
+package com.example.tile_puzzle_view
 
 import kotlin.math.abs
 
-class PuzzleBoardRules(val sizeX: Int, val sizeY: Int, puzzlePieceSequence: List<Int>) {
+internal class PuzzleBoardRules(val sizeX: Int, val sizeY: Int, puzzlePieceSequence: List<Int>) {
 
     private val _puzzlePieceSequence = puzzlePieceSequence.toMutableList()
     val puzzlePieceSequence: List<Int> = _puzzlePieceSequence

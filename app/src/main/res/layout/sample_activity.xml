@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".ui.SampleActivity">
 
-    <com.example.tile_puzzle.ui.puzzle.PuzzleView
+    <com.example.tile_puzzle_view.PuzzleView
+        android:id="@+id/puzzle_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

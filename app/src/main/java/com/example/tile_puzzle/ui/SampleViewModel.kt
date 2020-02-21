@@ -1,5 +1,6 @@
 package com.example.tile_puzzle.ui
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -22,8 +23,18 @@ class SampleViewModel @Inject constructor(
     private val _showMessageCommand = MutableLiveData<Event<String>>()
     val showMessageCommand: LiveData<Event<String>> get() = _showMessageCommand
 
+    val adapter = PuzzleNumbersAdapter(
+        3,
+        5,
+        listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 0)
+    )
+
     init {
         updateTime()
+    }
+
+    fun onPuzzleSequenceChange(pieceSequence: List<Int>) {
+        Log.d("puzzle-view", "On sequence change: $pieceSequence")
     }
 
     fun onRefresh() {
@@ -35,4 +46,5 @@ class SampleViewModel @Inject constructor(
         val timeMillis = repository.getCurrentTime()
         _time.value = formatter.format(Date(timeMillis))
     }
+
 }
