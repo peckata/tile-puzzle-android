@@ -1,5 +1,4 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_layout"
@@ -7,13 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".ui.SampleActivity">
 
+    <com.example.tile_puzzle.ui.puzzle.PuzzleView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <TextView
         android:id="@+id/time_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:textAppearance="?textAppearanceHeadline3"
-        tools:text="Time"/>
+        android:visibility="gone"
+        tools:text="Time" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/refresh_fab"
@@ -21,6 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:srcCompat="@android:drawable/ic_delete"/>
+        android:visibility="gone"
+        app:srcCompat="@android:drawable/ic_input_add" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
