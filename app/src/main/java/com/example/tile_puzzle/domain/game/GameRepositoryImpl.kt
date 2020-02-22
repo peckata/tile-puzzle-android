@@ -1,44 +1,35 @@
 package com.example.tile_puzzle.domain.game
 
+import com.example.tile_puzzle.data.shredprefs.PreferenceStorage
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @Singleton
-class GameRepositoryImpl @Inject constructor() : GameRepository {
-
-    var currentPuzzleGame: PuzzleGame? = null
+class GameRepositoryImpl @Inject constructor(
+    private val preferenceStorage: PreferenceStorage
+) : GameRepository {
 
     override fun createNewGame(sizeX: Int, sizeY: Int): PuzzleGame {
-        val maxSeqNum = sizeX * sizeY - 1
-
-        val sequence = (1..maxSeqNum).toMutableList()
-//        sequence.shuffle() TODO uncomment to randomize pieces
-        sequence.add(0)
-
-        currentPuzzleGame = PuzzleGame(sizeX, sizeY, sequence)
-        return currentPuzzleGame!!
+        val game = PuzzleGame.create(sizeX, sizeY)
+        preferenceStorage.saveGame(game)
+        return game
     }
 
-    override fun getCurrentGame(): PuzzleGame? {
-        return currentPuzzleGame
+    override fun getCurrentGame(): PuzzleGame {
+        return preferenceStorage.loadGame()
     }
 
     override fun saveCurrentGameSequence(newSequence: List<Int>) {
-        currentPuzzleGame?.let {
-            currentPuzzleGame = PuzzleGame(it.sizeX, it.sizeY, newSequence)
-        }
+        preferenceStorage.gameSequence = newSequence
     }
 
     override fun isGameComplete(): Boolean {
         // check if the game pieces are in order and last element is the empty slot
-        currentPuzzleGame?.let {
-            val sequence = it.sequence.toMutableList()
-            val lastElement = sequence.removeAt(sequence.lastIndex)
-            if (lastElement != 0) return false
-            return sequence.asSequence().zipWithNext { a, b -> a < b }.all { it }
-        }
-        return false
+        val sequence = preferenceStorage.gameSequence.toMutableList()
+        val lastElement = sequence.removeAt(sequence.lastIndex)
+        if (lastElement != 0) return false
+        return sequence.asSequence().zipWithNext { a, b -> a < b }.all { it }
     }
 
 }

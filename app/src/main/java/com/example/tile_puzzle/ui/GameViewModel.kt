@@ -14,7 +14,7 @@ class GameViewModel @Inject constructor(
     private val _showMessageCommand = MutableLiveData<Event<String>>()
     val showMessageCommand: LiveData<Event<String>> get() = _showMessageCommand
 
-    val game = repository.getCurrentGame() ?: repository.createNewGame(3, 5)
+    val game = repository.getCurrentGame()
 
     fun onPuzzleSequenceChange(pieceSequence: List<Int>) {
 
