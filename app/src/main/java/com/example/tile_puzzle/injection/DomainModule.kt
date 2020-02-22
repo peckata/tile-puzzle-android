@@ -1,7 +1,7 @@
 package com.example.tile_puzzle.injection
 
-import com.example.tile_puzzle.domain.SampleRepository
-import com.example.tile_puzzle.domain.SampleRepositoryImpl
+import com.example.tile_puzzle.domain.game.GameRepository
+import com.example.tile_puzzle.domain.game.GameRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
@@ -9,8 +9,8 @@ import javax.inject.Singleton
 @Module
 abstract class DomainModule {
 
-    /** [SampleRepository] is implemented by [SampleRepositoryImpl] **/
+    /** [GameRepository] is implemented by [GameRepositoryImpl] **/
     @Binds
     @Singleton
-    abstract fun bindSampleRepository(impl: SampleRepositoryImpl): SampleRepository
+    abstract fun bindGameRepository(impl: GameRepositoryImpl): GameRepository
 }

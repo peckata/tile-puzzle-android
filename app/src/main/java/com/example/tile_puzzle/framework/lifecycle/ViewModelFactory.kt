@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.tile_puzzle.framework
+package com.example.tile_puzzle.framework.lifecycle
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

@@ -1,4 +1,4 @@
-package com.example.tile_puzzle.framework
+package com.example.tile_puzzle.framework.lifecycle
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -8,5 +8,8 @@ import androidx.lifecycle.LiveData
  */
 
 inline fun <T> LiveData<Event<T>>.observeEvent(owner: LifecycleOwner, crossinline onEventUnhandledContent: (T) -> Unit) {
-    this.observe(owner, EventObserver { t: T -> onEventUnhandledContent(t) })
+    this.observe(owner,
+        EventObserver { t: T ->
+            onEventUnhandledContent(t)
+        })
 }

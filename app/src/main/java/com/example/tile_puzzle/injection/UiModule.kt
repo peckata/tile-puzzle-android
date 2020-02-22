@@ -2,10 +2,10 @@ package com.example.tile_puzzle.injection
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.tile_puzzle.framework.ViewModelFactory
-import com.example.tile_puzzle.framework.ViewModelKey
-import com.example.tile_puzzle.ui.SampleActivity
-import com.example.tile_puzzle.ui.SampleViewModel
+import com.example.tile_puzzle.framework.lifecycle.ViewModelFactory
+import com.example.tile_puzzle.framework.lifecycle.ViewModelKey
+import com.example.tile_puzzle.ui.GameActivity
+import com.example.tile_puzzle.ui.GameViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
@@ -21,16 +21,16 @@ abstract class UiModule {
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
 
     /**
-     * Inject dependencies into [SampleActivity]
+     * Inject dependencies into [GameActivity]
      **/
     @ContributesAndroidInjector
-    abstract fun contributeSampleActivity(): SampleActivity
+    abstract fun contributeSampleActivity(): GameActivity
 
     /**
-     * [ViewModel] identified by [SampleViewModel]::class is implemented by [SampleViewModel]
+     * [ViewModel] identified by [GameViewModel]::class is implemented by [GameViewModel]
      */
     @Binds
     @IntoMap
-    @ViewModelKey(SampleViewModel::class)
-    abstract fun bindSampleViewModel(viewModel: SampleViewModel): ViewModel
+    @ViewModelKey(GameViewModel::class)
+    abstract fun bindSampleViewModel(viewModel: GameViewModel): ViewModel
 }
