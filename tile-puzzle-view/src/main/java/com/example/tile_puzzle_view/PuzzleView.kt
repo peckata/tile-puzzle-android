@@ -1,5 +1,6 @@
 package com.example.tile_puzzle_view
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -7,16 +8,14 @@ import android.view.Gravity.CENTER
 import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import android.widget.RelativeLayout
 import kotlin.properties.Delegates
 
 class PuzzleView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : RelativeLayout(context, attrs, defStyleAttr) {
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     private lateinit var boardRules: PuzzleBoardRules
     private lateinit var puzzlePieces: List<View>
-    private lateinit var puzzlePiecesMap: Map<Int, View>
 
     /**
      * Callback to be invoked when the puzzle sequence changed on the Puzzle Board
@@ -39,7 +38,6 @@ class PuzzleView @JvmOverloads constructor(
             post {
                 // create and display Items
                 puzzlePieces = generatePuzzlePieces(boardRules, adapter)
-                puzzlePiecesMap = puzzlePieces.map { (it.tag as PuzzlePieceInfo).seqNum to it }.toMap()
                 displayPuzzlePieces(puzzlePieces)
             }
         }
@@ -50,22 +48,17 @@ class PuzzleView @JvmOverloads constructor(
         val pieces = mutableListOf<View>()
 
         // calculate puzzle piece dimensions
-        val pieceWidth = width / adapter.getBoardSizeX()
-        val pieceHeight = height / adapter.getBoardSizeY()
+        val pieceWidth = width.toFloat() / adapter.getBoardSizeX()
+        val pieceHeight = height.toFloat() / adapter.getBoardSizeY()
 
         // create views for each puzzle piece on the board
         adapter.getInitialPuzzlePieceSequence().forEach { seqPos ->
             if (seqPos != 0) {
                 val boardPos = boardRules.getPositionForPuzzlePiece(seqPos)
                 val pieceInfo = PuzzlePieceInfo(seqPos, boardPos, pieceWidth, pieceHeight)
-                val pieceView = adapter.createPuzzlePieceView(
-                    context,
-                    seqPos,
-                    pieceWidth,
-                    pieceHeight
-                )
+                val pieceView = adapter.createClickablePuzzlePieceView(context, seqPos)
                 pieceView.tag = pieceInfo
-                pieceView.setOnClickListener { onPuzzleItemClick(it.tag as PuzzlePieceInfo) }
+                pieceView.setOnClickListener { onPuzzleItemClick(it) }
                 pieces.add(pieceView)
             }
         }
@@ -76,12 +69,9 @@ class PuzzleView @JvmOverloads constructor(
         puzzlePieces.forEach { itemView ->
             val pieceInfo = itemView.tag as PuzzlePieceInfo
             val (x, y) = pieceInfo.getCoordinates()
-
-            val layoutParams = LayoutParams(pieceInfo.width, pieceInfo.height)
-            layoutParams.leftMargin = x
-            layoutParams.topMargin = y
-
-            addView(itemView, layoutParams)
+            itemView.translationX = x
+            itemView.translationY = y
+            addView(itemView, LayoutParams(pieceInfo.width.toInt(), pieceInfo.height.toInt()))
         }
     }
 
@@ -92,26 +82,42 @@ class PuzzleView @JvmOverloads constructor(
      * As result when the board is being updated anyone listening for changes in the
      * Puzzle piece sequence will be notified using the {@link PuzzleSequenceChangeListener}
      */
-    private fun onPuzzleItemClick(pieceInfo: PuzzlePieceInfo) {
-        val itemView = puzzlePiecesMap[pieceInfo.seqNum]
+    private fun onPuzzleItemClick(view: View) {
+        val pieceInfo = view.tag as PuzzlePieceInfo
         val currentPos = pieceInfo.boardPos
-        val newPosition = boardRules.movePuzzlePiece(pieceInfo.seqNum)
+        val currentCoordinates = pieceInfo.getCoordinates()
 
+        val newPosition = boardRules.movePuzzlePiece(pieceInfo.seqNum)
         // ignore if no changes to position
         if (currentPos == newPosition) return
 
         // update piece with new position on board
         pieceInfo.boardPos = newPosition
+        val newCoordinates = pieceInfo.getCoordinates()
 
         // move item to the new coordinates in layout
-        val (x, y) = pieceInfo.getCoordinates()
-        val layoutParams = LayoutParams(pieceInfo.width, pieceInfo.height)
-        layoutParams.leftMargin = x
-        layoutParams.topMargin = y
-        itemView?.layoutParams = layoutParams
+        animateViewTranslation(view, currentCoordinates, newCoordinates)
 
         // notify anyone listening for changes in puzzle
         sequenceChangeListener?.onPuzzleSequenceChange(boardRules.puzzlePieceSequence)
+    }
+
+    private fun animateViewTranslation(
+        view: View,
+        currentCoordinates: Pair<Float, Float>,
+        newCoordinates: Pair<Float, Float>
+    ) {
+        val (currentX, _) = currentCoordinates
+        val (x,y) = newCoordinates
+        // check what kind of translation we need x or y axis
+        val animateX = currentX != x
+        val translation = if (animateX) "translationX" else "translationY"
+        val newValue = if (animateX) x else y
+
+        ObjectAnimator.ofFloat(view, translation, newValue).apply {
+            duration = 300
+            start()
+        }
     }
 
     /**
@@ -120,16 +126,16 @@ class PuzzleView @JvmOverloads constructor(
     internal class PuzzlePieceInfo(
         val seqNum: Int,
         var boardPos: Pair<Int, Int>,
-        val width: Int,
-        val height: Int
+        val width: Float,
+        val height: Float
     ) {
         /**
          * Returns the coordinates for the Puzzle item view based on the relative position in the board
          */
-        fun getCoordinates(): Pair<Int, Int> {
+        fun getCoordinates(): Pair<Float, Float> {
             val (posX, posY) = boardPos
-            val x = posX * width
-            val y = posY * height
+            val x = (posX * width)
+            val y = (posY * height)
             return Pair(x, y)
         }
     }
@@ -193,36 +199,33 @@ class PuzzleView @JvmOverloads constructor(
 
 
         /**
-         * Returns the view for the puzzle piece given the specific sequence number of the position in the board.
-         *
-         * The item dimensions are fixed size based on the provided width and height
+         * Returns the clickable view for the puzzle piece given the specific sequence number of the position in the board.
          *
          * @param context View or Activity context
          * @param seqNum Sequence number of the puzzle item
-         * @param width Width of the puzzle piece view
-         * @param height Height of the puzzle piece view
          *
          * @return The view for the puzzle piece given the specific sequence number of the position in the board.
          *
          */
-        internal fun createPuzzlePieceView(
-            context: Context, seqNum: Int, width: Int, height: Int
+        internal fun createClickablePuzzlePieceView(
+            context: Context, seqNum: Int
         ): View {
             // create clickable wrapper view
             val piece = FrameLayout(context)
             piece.isClickable = true
             piece.isFocusable = true
             piece.setBackgroundResource(getBackgroundResId(context))
-            piece.layoutParams = FrameLayout.LayoutParams(width, height)
             // add the puzzle piece child view and center in the parent
-            val childParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            val childParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             childParams.gravity = CENTER
             piece.addView(createPuzzlePieceView(context, seqNum), childParams)
             return piece
         }
 
         /**
-         * Returns the resource id for the background drawable of the puzzle item
+         * Returns the resource id for the background drawable of the puzzle item.
+         *
+         * Override this method to provide your own res id
          *
          * @return The resource id for the background drawable of the puzzle item
          */
