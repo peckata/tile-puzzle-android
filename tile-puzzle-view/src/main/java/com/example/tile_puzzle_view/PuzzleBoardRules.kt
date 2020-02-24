@@ -1,5 +1,6 @@
 package com.example.tile_puzzle_view
 
+import com.example.tile_puzzle_view.utils.swap
 import kotlin.math.abs
 
 internal class PuzzleBoardRules(val sizeX: Int, val sizeY: Int, puzzlePieceSequence: List<Int>) {
@@ -84,13 +85,6 @@ internal class PuzzleBoardRules(val sizeX: Int, val sizeY: Int, puzzlePieceSeque
         val isNeighborX = (startY == endY) && abs(startX - endX) == 1
         val isNeighborY = (startX == endX) && abs(startY - endY) == 1
         return isNeighborX || isNeighborY
-    }
-
-    // TODO should this be outside?
-    private fun MutableList<Int>.swap(index1: Int, index2: Int) {
-        val tmp = this[index1]
-        this[index1] = this[index2]
-        this[index2] = tmp
     }
 
     companion object {

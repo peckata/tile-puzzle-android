@@ -1,4 +1,4 @@
-package com.example.tile_puzzle.domain.game
+package com.example.tile_puzzle.domain
 
 interface GameRepository {
 

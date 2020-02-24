@@ -2,7 +2,7 @@ package com.example.tile_puzzle.data.shredprefs
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.tile_puzzle.domain.game.PuzzleGame
+import com.example.tile_puzzle.domain.PuzzleGame
 import com.example.tile_puzzle.framework.IntListPreference
 import com.example.tile_puzzle.framework.IntPreference
 
@@ -19,7 +19,7 @@ interface PreferenceStorage {
 
     fun saveGame(game: PuzzleGame)
 
-    fun loadGame():PuzzleGame
+    fun loadGame(): PuzzleGame
 }
 
 /**

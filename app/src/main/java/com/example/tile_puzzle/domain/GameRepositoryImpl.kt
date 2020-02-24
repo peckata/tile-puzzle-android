@@ -1,9 +1,8 @@
-package com.example.tile_puzzle.domain.game
+package com.example.tile_puzzle.domain
 
 import com.example.tile_puzzle.data.shredprefs.PreferenceStorage
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 @Singleton
 class GameRepositoryImpl @Inject constructor(

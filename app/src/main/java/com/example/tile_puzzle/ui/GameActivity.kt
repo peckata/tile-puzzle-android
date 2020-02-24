@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.tile_puzzle.R
 import com.example.tile_puzzle.framework.DaggerAppCompatActivity
 import com.example.tile_puzzle.framework.lifecycle.observeEvent
-import com.example.tile_puzzle_view.PuzzleView.PuzzleSequenceChangeListener
+import com.example.tile_puzzle_view.setSequenceChangeListener
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.game_activity.*
 import javax.inject.Inject
@@ -27,11 +27,9 @@ class GameActivity : DaggerAppCompatActivity(R.layout.game_activity) {
             viewModel.game.sizeY,
             viewModel.game.sequence
         )
-        // TODO convert to SAM lambda call?
-        puzzle_view.sequenceChangeListener = object : PuzzleSequenceChangeListener {
-            override fun onPuzzleSequenceChange(pieceSequence: List<Int>) {
-                viewModel.onPuzzleSequenceChange(pieceSequence)
-            }
+
+        puzzle_view.setSequenceChangeListener {
+            viewModel.onPuzzleSequenceChange(it)
         }
 
         viewModel.showMessageCommand.observeEvent(this) { message ->

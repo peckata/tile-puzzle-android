@@ -3,7 +3,7 @@ package com.example.tile_puzzle.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.tile_puzzle.domain.game.GameRepository
+import com.example.tile_puzzle.domain.GameRepository
 import com.example.tile_puzzle.framework.lifecycle.Event
 import javax.inject.Inject
 

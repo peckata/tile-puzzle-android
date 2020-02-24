@@ -1,13 +1,12 @@
 package com.example.tile_puzzle_view
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.util.AttributeSet
-import android.util.TypedValue
-import android.view.Gravity.CENTER
 import android.view.View
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import com.example.tile_puzzle_view.utils.animateViewTranslation
+import com.example.tile_puzzle_view.utils.makeClickable
+import com.example.tile_puzzle_view.utils.resourceIdFromAttribute
 import kotlin.properties.Delegates
 
 class PuzzleView @JvmOverloads constructor(
@@ -85,39 +84,16 @@ class PuzzleView @JvmOverloads constructor(
     private fun onPuzzleItemClick(view: View) {
         val pieceInfo = view.tag as PuzzlePieceInfo
         val currentPos = pieceInfo.boardPos
-        val currentCoordinates = pieceInfo.getCoordinates()
-
         val newPosition = boardRules.movePuzzlePiece(pieceInfo.seqNum)
         // ignore if no changes to position
         if (currentPos == newPosition) return
 
         // update piece with new position on board
         pieceInfo.boardPos = newPosition
-        val newCoordinates = pieceInfo.getCoordinates()
-
-        // move item to the new coordinates in layout
-        animateViewTranslation(view, currentCoordinates, newCoordinates)
+        view.animateViewTranslation(pieceInfo.getCoordinates())
 
         // notify anyone listening for changes in puzzle
         sequenceChangeListener?.onPuzzleSequenceChange(boardRules.puzzlePieceSequence)
-    }
-
-    private fun animateViewTranslation(
-        view: View,
-        currentCoordinates: Pair<Float, Float>,
-        newCoordinates: Pair<Float, Float>
-    ) {
-        val (currentX, _) = currentCoordinates
-        val (x,y) = newCoordinates
-        // check what kind of translation we need x or y axis
-        val animateX = currentX != x
-        val translation = if (animateX) "translationX" else "translationY"
-        val newValue = if (animateX) x else y
-
-        ObjectAnimator.ofFloat(view, translation, newValue).apply {
-            duration = 300
-            start()
-        }
     }
 
     /**
@@ -192,11 +168,7 @@ class PuzzleView @JvmOverloads constructor(
          *
          * @return The view for the puzzle piece given the specific sequence number of the position in the board.
          */
-        abstract fun createPuzzlePieceView(
-            context: Context,
-            seqNum: Int
-        ): View
-
+        abstract fun createPuzzlePieceView(context: Context, seqNum: Int): View
 
         /**
          * Returns the clickable view for the puzzle piece given the specific sequence number of the position in the board.
@@ -207,19 +179,8 @@ class PuzzleView @JvmOverloads constructor(
          * @return The view for the puzzle piece given the specific sequence number of the position in the board.
          *
          */
-        internal fun createClickablePuzzlePieceView(
-            context: Context, seqNum: Int
-        ): View {
-            // create clickable wrapper view
-            val piece = FrameLayout(context)
-            piece.isClickable = true
-            piece.isFocusable = true
-            piece.setBackgroundResource(getBackgroundResId(context))
-            // add the puzzle piece child view and center in the parent
-            val childParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-            childParams.gravity = CENTER
-            piece.addView(createPuzzlePieceView(context, seqNum), childParams)
-            return piece
+        fun createClickablePuzzlePieceView(context: Context, seqNum: Int): View {
+            return createPuzzlePieceView(context, seqNum).makeClickable(getBackgroundResId(context))
         }
 
         /**
@@ -230,10 +191,16 @@ class PuzzleView @JvmOverloads constructor(
          * @return The resource id for the background drawable of the puzzle item
          */
         fun getBackgroundResId(context: Context): Int {
-            val outValue = TypedValue()
-            context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
-            return outValue.resourceId
+            return context.resourceIdFromAttribute(android.R.attr.selectableItemBackground)
         }
     }
 
+}
+
+fun PuzzleView.setSequenceChangeListener(f: (pieceSequence: List<Int>) -> Unit) {
+    sequenceChangeListener = object : PuzzleView.PuzzleSequenceChangeListener {
+        override fun onPuzzleSequenceChange(pieceSequence: List<Int>) {
+            f(pieceSequence)
+        }
+    }
 }
