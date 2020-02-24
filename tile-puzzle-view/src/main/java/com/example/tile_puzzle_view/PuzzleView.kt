@@ -14,7 +14,7 @@ class PuzzleView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     private lateinit var boardRules: PuzzleBoardRules
-    private lateinit var puzzlePieces: List<View>
+    private lateinit var puzzlePieces: List<Pair<PuzzlePieceInfo, View>>
 
     /**
      * Callback to be invoked when the puzzle sequence changed on the Puzzle Board
@@ -42,9 +42,11 @@ class PuzzleView @JvmOverloads constructor(
         }
     }
 
-
-    private fun generatePuzzlePieces(boardRules: PuzzleBoardRules, adapter: Adapter): List<View> {
-        val pieces = mutableListOf<View>()
+    private fun generatePuzzlePieces(
+        boardRules: PuzzleBoardRules,
+        adapter: Adapter
+    ): List<Pair<PuzzlePieceInfo, View>> {
+        val pieces = mutableListOf<Pair<PuzzlePieceInfo, View>>()
 
         // calculate puzzle piece dimensions
         val pieceWidth = width.toFloat() / adapter.getBoardSizeX()
@@ -56,21 +58,20 @@ class PuzzleView @JvmOverloads constructor(
                 val boardPos = boardRules.getPositionForPuzzlePiece(seqPos)
                 val pieceInfo = PuzzlePieceInfo(seqPos, boardPos, pieceWidth, pieceHeight)
                 val pieceView = adapter.createClickablePuzzlePieceView(context, seqPos)
-                pieceView.tag = pieceInfo
-                pieceView.setOnClickListener { onPuzzleItemClick(it) }
-                pieces.add(pieceView)
+                pieceView.setOnClickListener { onPuzzleItemClick(it, pieceInfo) }
+                pieces.add(Pair(pieceInfo, pieceView))
             }
         }
         return pieces
     }
 
-    private fun displayPuzzlePieces(puzzlePieces: List<View>) {
-        puzzlePieces.forEach { itemView ->
-            val pieceInfo = itemView.tag as PuzzlePieceInfo
-            val (x, y) = pieceInfo.getCoordinates()
-            itemView.translationX = x
-            itemView.translationY = y
-            addView(itemView, LayoutParams(pieceInfo.width.toInt(), pieceInfo.height.toInt()))
+    private fun displayPuzzlePieces(puzzlePieces: List<Pair<PuzzlePieceInfo, View>>) {
+        puzzlePieces.forEach { pieceItem ->
+            val (pieceInfo, pieceView) = pieceItem
+            val (x, y) = pieceInfo.coordinates
+            pieceView.translationX = x
+            pieceView.translationY = y
+            addView(pieceView, LayoutParams(pieceInfo.width.toInt(), pieceInfo.height.toInt()))
         }
     }
 
@@ -81,8 +82,7 @@ class PuzzleView @JvmOverloads constructor(
      * As result when the board is being updated anyone listening for changes in the
      * Puzzle piece sequence will be notified using the {@link PuzzleSequenceChangeListener}
      */
-    private fun onPuzzleItemClick(view: View) {
-        val pieceInfo = view.tag as PuzzlePieceInfo
+    private fun onPuzzleItemClick(view: View, pieceInfo: PuzzlePieceInfo) {
         val currentPos = pieceInfo.boardPos
         val newPosition = boardRules.movePuzzlePiece(pieceInfo.seqNum)
         // ignore if no changes to position
@@ -90,14 +90,14 @@ class PuzzleView @JvmOverloads constructor(
 
         // update piece with new position on board
         pieceInfo.boardPos = newPosition
-        view.animateViewTranslation(pieceInfo.getCoordinates())
+        view.animateViewTranslation(pieceInfo.coordinates)
 
         // notify anyone listening for changes in puzzle
         sequenceChangeListener?.onPuzzleSequenceChange(boardRules.puzzlePieceSequence)
     }
 
     /**
-     * Helper class for tagging and calculating the position of the Puzzle Item View
+     * Helper class for calculating the position of the Puzzle Item View
      */
     internal class PuzzlePieceInfo(
         val seqNum: Int,
@@ -108,12 +108,13 @@ class PuzzleView @JvmOverloads constructor(
         /**
          * Returns the coordinates for the Puzzle item view based on the relative position in the board
          */
-        fun getCoordinates(): Pair<Float, Float> {
-            val (posX, posY) = boardPos
-            val x = (posX * width)
-            val y = (posY * height)
-            return Pair(x, y)
-        }
+        val coordinates: Pair<Float, Float>
+            get() {
+                val (posX, posY) = boardPos
+                val x = (posX * width)
+                val y = (posY * height)
+                return Pair(x, y)
+            }
     }
 
     /**
