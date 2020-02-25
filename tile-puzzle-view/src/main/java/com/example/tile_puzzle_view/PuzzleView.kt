@@ -5,8 +5,6 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
 import com.example.tile_puzzle_view.utils.animateViewTranslation
-import com.example.tile_puzzle_view.utils.makeClickable
-import com.example.tile_puzzle_view.utils.resourceIdFromAttribute
 import kotlin.properties.Delegates
 
 class PuzzleView @JvmOverloads constructor(
@@ -57,7 +55,7 @@ class PuzzleView @JvmOverloads constructor(
             if (seqPos != 0) {
                 val boardPos = boardRules.getPositionForPuzzlePiece(seqPos)
                 val pieceInfo = PuzzlePieceInfo(seqPos, boardPos, pieceWidth, pieceHeight)
-                val pieceView = adapter.createClickablePuzzlePieceView(context, seqPos)
+                val pieceView = adapter.createAndBindPuzzlePieceView(context, seqPos)
                 pieceView.setOnClickListener { onPuzzleItemClick(it, pieceInfo) }
                 pieces.add(Pair(pieceInfo, pieceView))
             }
@@ -169,31 +167,7 @@ class PuzzleView @JvmOverloads constructor(
          *
          * @return The view for the puzzle piece given the specific sequence number of the position in the board.
          */
-        abstract fun createPuzzlePieceView(context: Context, seqNum: Int): View
-
-        /**
-         * Returns the clickable view for the puzzle piece given the specific sequence number of the position in the board.
-         *
-         * @param context View or Activity context
-         * @param seqNum Sequence number of the puzzle item
-         *
-         * @return The view for the puzzle piece given the specific sequence number of the position in the board.
-         *
-         */
-        fun createClickablePuzzlePieceView(context: Context, seqNum: Int): View {
-            return createPuzzlePieceView(context, seqNum).makeClickable(getBackgroundResId(context))
-        }
-
-        /**
-         * Returns the resource id for the background drawable of the puzzle item.
-         *
-         * Override this method to provide your own res id
-         *
-         * @return The resource id for the background drawable of the puzzle item
-         */
-        fun getBackgroundResId(context: Context): Int {
-            return context.resourceIdFromAttribute(android.R.attr.selectableItemBackground)
-        }
+        abstract fun createAndBindPuzzlePieceView(context: Context, seqNum: Int): View
     }
 
 }
